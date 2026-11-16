@@ -1,0 +1,25 @@
+# Servidor RemoteDesk: hbbs (IDs/señalización) + hbbr (relay de respaldo).
+# Imagen oficial de RustDesk OSS, versión fijada (no usar "latest").
+# network_mode: host -> sin NAT de Docker, menor latencia y UDP sin problemas.
+# "-k _" -> ambos cargan la clave de ./data/id_ed25519; clientes sin nuestra
+# clave pública no pueden registrarse ni usar el relay.
+services:
+  hbbs:
+    container_name: hbbs
+    image: rustdesk/rustdesk-server:1.1.16
+    command: hbbs -k _
+    volumes:
+      - ./data:/root
+    network_mode: host
+    depends_on:
+      - hbbr
+    restart: unless-stopped
+
+  hbbr:
+    container_name: hbbr
+    image: rustdesk/rustdesk-server:1.1.16
+    command: hbbr -k _
+    volumes:
+      - ./data:/root
+    network_mode: host
+    restart: unless-stopped

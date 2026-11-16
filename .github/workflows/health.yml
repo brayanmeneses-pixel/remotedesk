@@ -1,0 +1,44 @@
+# Comprueba cada hora que el servidor responde. Si falla, abre un issue
+# (GitHub te avisa por correo). Configura la variable del repo SERVER_HOST
+# (Settings > Secrets and variables > Actions > Variables).
+# Nota: GitHub desactiva los cron de repos públicos tras 60 días sin commits;
+# reactívalo desde la pestaña Actions si pasa.
+name: server-health
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+permissions:
+  issues: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Requiere SERVER_HOST
+        if: ${{ vars.SERVER_HOST == '' }}
+        run: |
+          echo "::error::Falta la variable SERVER_HOST en el repositorio."
+          exit 1
+      - name: Probar puertos 21115-21117
+        id: probe
+        run: |
+          fail=""
+          for p in 21115 21116 21117; do
+            for try in 1 2 3; do
+              if nc -z -w5 "${{ vars.SERVER_HOST }}" $p; then echo "tcp $p OK"; continue 2; fi
+              sleep 10
+            done
+            fail="$fail $p"
+          done
+          echo "fail=$fail" >> "$GITHUB_OUTPUT"
+          [ -z "$fail" ]
+      - name: Abrir issue si está caído
+        if: failure() && steps.probe.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Servidor caído: puertos${{ steps.probe.outputs.fail }}"
+          if ! gh issue list -R "$GITHUB_REPOSITORY" --state open --search "Servidor caído in:title" --json number -q '.[0].number' | grep -q .; then
+            gh issue create -R "$GITHUB_REPOSITORY" --title "$title" \
+              --body "El chequeo de ${{ vars.SERVER_HOST }} falló a las $(date -u). Guía: docs/guias/01-servidor-oracle.md (sección Recuperación)."
+          fi
