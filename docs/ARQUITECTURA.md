@@ -80,7 +80,7 @@ flowchart LR
 
 ### Riesgo principal: Oracle recupera VMs inactivas
 Oracle puede reclamar instancias *Always Free* inactivas durante 7 días (CPU p95 < 20 %, red < 20 % y, en A1, memoria baja). Mitigaciones:
-1. **Uso la VM AMD `E2.1.Micro`.** Tiene CPU tan pequeña que el uso normal del servidor la mantiene activa más fácilmente que una A1.
+1. **VM real: Ampere `A1.Flex` (1 OCPU / 6 GB) en Bogotá**, porque la región no ofrece la AMD `E2.1.Micro`. Si Oracle la reclama, `infra/oci_provision.py` la recrea sola (reintenta si no hay capacidad).
 2. **Reconstrucción en 10 minutos:** script `infra/` (cloud-init + docker compose) en el repo. Las **claves del servidor** se respaldan fuera del repo (en tu PC o gestor de contraseñas), así una VM nueva conserva la misma identidad y los clientes no se reconfiguran.
 3. **Dominio o DNS fijo** (ver §7): si cambia la IP, solo se actualiza el DNS.
 4. **Una Action programada de GitHub** comprueba cada hora que el servidor responde y abre un *issue* (que te llega por correo) si se cae.

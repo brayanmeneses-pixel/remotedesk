@@ -27,8 +27,15 @@ Herramienta de acceso remoto tipo AnyDesk para soporte interno de Kardinc: 1 PC 
 - Generar el portable: `.\tools\make-portable.ps1 -ServerHost <dominio> -PubKey "<clave>"`
 - Instalar el servidor: ver `docs/guias/01-servidor-oracle.md`.
 
+## Cuentas y recursos
+- GitHub: `brayanmeneses-pixel` (gh). Repos: `remotedesk` (este) y `remotedesk-client` (fork, rama por defecto `remotedesk`, basada en el tag 1.5.3).
+- Build del cliente: workflow `remotedesk-windows.yml` del fork (generado por `remotedesk/gen_workflow.py`); variables del repo `RD_APP_NAME`, `RD_SERVER`, `RD_KEY`. Un tag `rd-*` publica una Release.
+- Oracle: región sa-bogota-1, VCN `remotedesk-vcn`, VM `remotedesk-server` (A1.Flex). API key en `~/.oci/` (fuera del repo); SDK en el venv `C:\ov`.
+- SSH a la VM: `ssh -i ~/.ssh/remotedesk_oracle ubuntu@<IP>`.
+
 ## Estado
 - [x] Fase 0: arquitectura (el usuario indicó "trabaja en todo" = aprobada)
 - [~] Fase 1a: código listo y probado localmente; **falta** la VM de Oracle (la crea el usuario) y las pruebas reales de la guía 02
-- [ ] Fase 1b: fork con nombre propio. **Bloqueado por:** nombre del producto y cuenta de GitHub (hay dos en `gh`: `nexantop-source` y `brayanmeneses-pixel`)
+- [x] Fase 1b: fork con nombre propio; build de Windows OK (portable + MSI en la Release `rd-nightly`)
+- [~] Servidor: red creada; la VM espera capacidad A1 en Bogotá (`python infra/oci_provision.py` reintenta)
 - [ ] Fases 2-6
